@@ -38,3 +38,25 @@ def test_date_calibration_unique_candidate():
     evidence, debug = engine.retrieve("When was the Atlas launch?", session_id="s1")
     answer = engine.calibrator.calibrate_answer("It was in July.", evidence, debug["profile"])
     assert answer == "2026-07-21"
+
+
+def test_when_question_routes_to_local_temporal_view():
+    engine = make_engine()
+    _, debug = engine.retrieve("When was the Atlas launch?", session_id="s1")
+    assert debug["profile"].route == "local"
+    assert "when" in debug["profile"].temporal_cues
+    assert debug["profile"].answer_type == "date"
+
+
+def test_vietnamese_when_question_routes_to_local_temporal_view():
+    engine = make_engine()
+    _, debug = engine.retrieve("Khi nào Atlas ra mắt?", session_id="s1")
+    assert debug["profile"].route == "local"
+    assert "khi nào" in debug["profile"].temporal_cues
+    assert debug["profile"].answer_type == "date"
+
+
+def test_non_temporal_word_containing_date_does_not_trigger_temporal_route():
+    engine = make_engine()
+    _, debug = engine.retrieve("Who did Alice update about Atlas?", session_id="s1")
+    assert "date" not in debug["profile"].temporal_cues

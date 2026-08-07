@@ -9,6 +9,7 @@ from .types import QueryProfile
 
 _TEMPORAL = ["before", "after", "then", "next", "previous", "last", "latest", "first", "earlier", "later", "hôm qua", "hôm nay", "trước", "sau", "tiếp theo", "lần đầu", "gần đây"]
 _RELATIONAL = ["relationship", "related", "colleague", "manager", "works with", "friend", "who did", "which person", "quan hệ", "đồng nghiệp", "quản lý", "làm cùng", "ai đã"]
+_DATE_QUERY_RE = re.compile(r"\bwhen\b|\bdate\b|khi nào|ngày nào", re.IGNORECASE)
 
 
 class QueryRouter:
@@ -19,7 +20,9 @@ class QueryRouter:
         ql = query.lower()
         entities = self.entity_extractor.extract(query)
         temporal = [x for x in _TEMPORAL if x in ql]
-        if re.search(r"\bwhen\b|khi nào|ngày nào|date", ql):
+        date_signal = _DATE_QUERY_RE.search(ql)
+        if date_signal:
+            temporal.append(date_signal.group(0).lower())
             answer_type = "date"
         elif re.search(r"\bwho\b|ai\b", ql):
             answer_type = "person"
